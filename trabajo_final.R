@@ -3,6 +3,8 @@ library(devtools)
 library(StatsBombR)
 library(ggplot2)
 library(ggforce)
+library(dplyr)
+library(gridExtra)
 
 # --------------------------------- CREACION DE LA CANCHA --------------------------------------------------------------
 
@@ -129,8 +131,20 @@ g1 <- g + geom_segment(aes(x = pos_x_meter, y = pos_y_meter,
                   size = 0.5,
                   arrow = arrow(length = unit(0.2, "cm"))) +
   scale_color_manual(values = c("blue", "red")) +
-  scale_linetype_manual(values = c(2,1))
+  scale_linetype_manual(values = c(2,1)) +
+  facet_wrap(~to_facet, nrow = 3) +
 
-g2 <- g1 + facet_wrap(~to_facet, nrow = 3)
+  
+  labs(color = "Pases Correctos",
+       linetype = "Pases Hacia Adelante",
+       caption = 'Pases tomados en cuenta en juego regular, excluyendo los balones parados') +
+  
+  ggtitle(label = "Pases de Lionel Messi en Qatar 2022") +
+  
+  theme(legend.margin = margin(r = 0.5, unit = "cm"),
+        plot.margin = margin(t = 0.5, l = 0.5,b = 0.5, unit ="cm"))
+  
 
-g2
+g1
+
+
