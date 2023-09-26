@@ -1,3 +1,7 @@
+#
+## Daniel Hernandez
+#
+
 # Instalacion de paquetes
 library(devtools)
 library(StatsBombR)
@@ -115,7 +119,7 @@ qatar_2022_eventos <- qatar_2022_eventos_limpios %>%
 
 pases_messi <- qatar_2022_eventos %>% filter(player.name == 'Lionel Andrés Messi Cuccittini' & type.name == 'Pass')
 pases_messi_regular <- pases_messi %>%
-                                  mutate(pass_forward = ifelse(pass_end_pos_x_meter > pos_x_meter, "Yes", "No")) %>% 
+                                  mutate(pass_forward = ifelse(pass_end_pos_x_meter > pos_x_meter, "Si", "No")) %>% 
                                   mutate(pass_correct = ifelse(is.na(pass.outcome.name), "Completado", "Incompleto")) %>%
                                   filter(play_pattern.name == 'Regular Play') %>%
                                   left_join(qatar_2022_juegos, by = "match_id") %>%
@@ -130,10 +134,13 @@ porcentaje_completados <- round((pases_completados["Completado"] / sum(pases_com
 
 # se obtiene el % de pases hacia adelante
 pases_adelante <- table(pases_messi_regular$pass_forward)
-porcentaje_pases_adelante <- round((pases_adelante["Yes"] / sum(pases_adelante)) * 100 ,1)
+porcentaje_pases_adelante <- round((pases_adelante["Si"] / sum(pases_adelante)) * 100 ,1)
 
 # -------------------------------- VISUALIZACION DE LOS DATOS EN LA CANCHA ------------------------------------
+
+# se le pasan los datos a la cancha
 g <- get_pitch(gp = ggplot(data = pases_messi_regular), dims = dims)
+#se agregan las capas esteticas y de datos
 g1 <- g + geom_segment(aes(x = pos_x_meter, y = pos_y_meter, 
                       xend = pass_end_pos_x_meter, yend = pass_end_pos_y_meter, 
                   linetype = pass_forward, col = pass_correct),
@@ -142,29 +149,32 @@ g1 <- g + geom_segment(aes(x = pos_x_meter, y = pos_y_meter,
   scale_color_manual(values = c("blue", "red")) +
   scale_linetype_manual(values = c(2,1)) +
   facet_wrap(~to_facet, nrow = 3) +
-
-  
+# se personalizan y agregan titulos y leyendas al grafico
   labs(color = "Pases Correctos",
-       linetype = "Pases Hacia Adelante",
-       caption = 'Pases tomados en cuenta en juego regular, excluyendo los balones parados
-       \nPases Hacia Adelante: pase cuyo la posición final del pases esta más cerca del arco rival que la posición inicial
-       \nPases Correctos: Pase cuyo fue recibido por un compeñero de equipo') +
+       linetype = "Pases Hacia Delante",
+       caption = 'Pases tomados en cuenta en juego regular, excluyendo los balones parados.
+       \nPases Hacia Delante: Pase cuya la posición final del pases esta más cerca del arco rival que la posición inicial.
+       \nPases Correctos: Pase que fue recibido por un compeñero de equipo.
+       \n\n GRÁFICO REALIZADO POR DANIEL HERNANDEZ') +
   
-  ggtitle(label = "Pases de Lionel Messi en Qatar 2022",
+  ggtitle(label = "Curso de Visualización 2D de La Pizarra del DT - Pases de Lionel Messi en Qatar 2022",
           subtitle = paste0(count(pases_messi_regular), " pases en total, ", sum(pases_messi_regular$pass_correct == "Completado"), " pases correctos (", 
-                            porcentaje_completados, "% de precisión) y ", sum(pases_messi_regular$pass_forward == "Yes") ," pases hacia adelante (",porcentaje_pases_adelante," % del total) En 7 partidos jugados")) +
-  
+                            porcentaje_completados, "% de precisión) y ", sum(pases_messi_regular$pass_forward == "Si") ," pases hacia delante (",porcentaje_pases_adelante," % del total) En 7 partidos jugados")) +
+# se personaliza la ubicacion de los textos
   theme(legend.margin = margin(r = 0.5, unit = "cm"),
         plot.margin = margin(t = 0.5, l = 0.5,b = 0.5, unit ="cm"),
         plot.title = element_text(margin = margin(b = 0.5, unit = "cm")),
-        plot.subtitle = element_text(margin = margin(b = 0.5, unit = "cm"))) +
-#g1
+        plot.subtitle = element_text(margin = margin(b = 0.5, unit = "cm")))
 
+# se agregan las imagenes al grafico
 g2  <- ggdraw() +
   draw_plot(g1) +
-  draw_image("statsbomb.jpg",  x = 0, y = -0.24, scale = 0.15)
-  
+  draw_image("statsbomb.jpg",  x = -0.35, y = -0.45, scale = 0.15) +
+  draw_image("logo_argentina.jpg",  x = 0, y = -0.24, scale = 0.20)
 
-g2
+#g2
+
+# se guarda la imagen
+ggsave('pases_messi_qatar.jpg', width = 12, height = 8)
 
 
