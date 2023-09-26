@@ -5,6 +5,7 @@ library(ggplot2)
 library(ggforce)
 library(dplyr)
 library(gridExtra)
+library(cowplot)
 
 # --------------------------------- CREACION DE LA CANCHA --------------------------------------------------------------
 
@@ -123,6 +124,14 @@ pases_messi_regular <- pases_messi %>%
                                                                   away_team.away_team_name, home_team.home_team_name), 
                                                            " (", competition_stage.name, ")"))
 
+# se obtiene el % de pases completados
+pases_completados <- table(pases_messi_regular$pass_correct)
+porcentaje_completados <- round((pases_completados["Completado"] / sum(pases_completados)) * 100, 1)
+
+# se obtiene el % de pases hacia adelante
+pases_adelante <- table(pases_messi_regular$pass_forward)
+porcentaje_pases_adelante <- round((pases_adelante["Yes"] / sum(pases_adelante)) * 100 ,1)
+
 # -------------------------------- VISUALIZACION DE LOS DATOS EN LA CANCHA ------------------------------------
 g <- get_pitch(gp = ggplot(data = pases_messi_regular), dims = dims)
 g1 <- g + geom_segment(aes(x = pos_x_meter, y = pos_y_meter, 
@@ -137,14 +146,25 @@ g1 <- g + geom_segment(aes(x = pos_x_meter, y = pos_y_meter,
   
   labs(color = "Pases Correctos",
        linetype = "Pases Hacia Adelante",
-       caption = 'Pases tomados en cuenta en juego regular, excluyendo los balones parados') +
+       caption = 'Pases tomados en cuenta en juego regular, excluyendo los balones parados
+       \nPases Hacia Adelante: pase cuyo la posición final del pases esta más cerca del arco rival que la posición inicial
+       \nPases Correctos: Pase cuyo fue recibido por un compeñero de equipo') +
   
-  ggtitle(label = "Pases de Lionel Messi en Qatar 2022") +
+  ggtitle(label = "Pases de Lionel Messi en Qatar 2022",
+          subtitle = paste0(count(pases_messi_regular), " pases en total, ", sum(pases_messi_regular$pass_correct == "Completado"), " pases correctos (", 
+                            porcentaje_completados, "% de precisión) y ", sum(pases_messi_regular$pass_forward == "Yes") ," pases hacia adelante (",porcentaje_pases_adelante," % del total) En 7 partidos jugados")) +
   
   theme(legend.margin = margin(r = 0.5, unit = "cm"),
-        plot.margin = margin(t = 0.5, l = 0.5,b = 0.5, unit ="cm"))
+        plot.margin = margin(t = 0.5, l = 0.5,b = 0.5, unit ="cm"),
+        plot.title = element_text(margin = margin(b = 0.5, unit = "cm")),
+        plot.subtitle = element_text(margin = margin(b = 0.5, unit = "cm"))) +
+#g1
+
+g2  <- ggdraw() +
+  draw_plot(g1) +
+  draw_image("statsbomb.jpg",  x = 0, y = -0.24, scale = 0.15)
   
 
-g1
+g2
 
 
